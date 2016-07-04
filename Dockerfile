@@ -44,9 +44,7 @@ RUN set -x \
         linux-headers \
         openjdk8 \
     && cd /tmp/ \
-    && git clone https://github.com/apache/mesos.git 
-    
-RUN set -x \    
+    && git clone https://github.com/apache/mesos.git \  
     ## build
     && cd /tmp/mesos \
     && ./bootstrap \
