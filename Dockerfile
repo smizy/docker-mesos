@@ -23,31 +23,43 @@ RUN set -x \
         | tar -xzf - -C /tmp \
     && mv /tmp/apache-maven-${MAVEN_VERSION} /usr/lib/maven \
     && ln -s /usr/lib/maven/bin/mvn /usr/bin/mvn \
+    ## 
     && apk --no-cache add \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+        glog \
+    && apk --no-cache add --virtual .builddeps.edge \
         --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
         glog-dev \
     && apk --no-cache add \
-        apr-util-dev \
-        boost-dev \
-        curl-dev \
+        apr-util \
+        boost \
+        curl \
         cyrus-sasl-crammd5 \
-        fts-dev \
+        fts \
         libstdc++ \
         openjdk8-jre \
         patch \
-        protobuf-dev \
-        python-dev \
-        subversion-dev \
-        zlib-dev \
+        protobuf \
+        python \
+        subversion \
+        zlib \
     ## builddeps
     && apk --no-cache add --virtual .builddeps \
+        apr-util-dev \       
         autoconf \
         automake \
+        boost-dev \        
         build-base \
+        curl-dev \
+        fts-dev \
         git \
         libtool \
         linux-headers \
         openjdk8 \
+        protobuf-dev \
+        python-dev \
+        subversion-dev \
+        zlib-dev \
     && cd /tmp/ \
     && git clone https://github.com/apache/mesos.git  \  
     && cd /tmp/mesos \
@@ -62,9 +74,12 @@ RUN set -x \
         --with-glog=/usr \
         --with-protobuf=/usr \
         --without-included-zookeeper \
-    && make \
+    && CPUCOUNT=$(cat /proc/cpuinfo | grep '^processor.*:' | wc -l)  \
+    && make -j ${CPUCOUNT} \
     && make install \
-    && apk del .builddeps \  
+    && apk del  \
+        .builddeps \  
+        .builddeps.edge \
     ## user/dir/permmsion
     && adduser -D  -g '' -s /sbin/nologin -u 1000 docker \
     && adduser -D  -g '' -s /sbin/nologin mesos \
@@ -76,6 +91,4 @@ RUN set -x \
 
 COPY entrypoint.sh  /usr/local/bin/
     
-# ENV PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
-
 ENTRYPOINT ["entrypoint.sh"]
