@@ -77,3 +77,5 @@ RUN set -x \
 COPY entrypoint.sh  /usr/local/bin/
     
 # ENV PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
+
+ENTRYPOINT ["entrypoint.sh"]
