@@ -24,13 +24,18 @@ RUN set -x \
     && mv /tmp/apache-maven-${MAVEN_VERSION} /usr/lib/maven \
     && ln -s /usr/lib/maven/bin/mvn /usr/bin/mvn \
     && apk --no-cache add \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+        glog-dev \
+    && apk --no-cache add \
         apr-util-dev \
+        boost-dev \
         curl-dev \
         cyrus-sasl-crammd5 \
         fts-dev \
         libstdc++ \
         openjdk8-jre \
         patch \
+        protobuf-dev \
         python-dev \
         subversion-dev \
         zlib-dev \
@@ -44,16 +49,31 @@ RUN set -x \
         linux-headers \
         openjdk8 \
     && cd /tmp/ \
-    && git clone https://github.com/apache/mesos.git \  
-    ## build
+    && git clone https://github.com/apache/mesos.git  \  
     && cd /tmp/mesos \
     && ./bootstrap \
     && mkdir build \
     && cd build \
     && ../configure \
+        --disable-java \
+        --disable-optimize \
+        --disable-python \
+        --with-boost=/usr \ 
+        --with-glog=/usr \
+        --with-protobuf=/usr \
+        --without-included-zookeeper \
     && make \
     && make install \
-    && apk del .builddeps \
+    && apk del .builddeps \  
+    ## user/dir/permmsion
+    && adduser -D  -g '' -s /sbin/nologin -u 1000 docker \
+    && adduser -D  -g '' -s /sbin/nologin mesos \
+    # && mkdir -p \
+    #     ${MESOS_LOG_DIR} 
+    # && chown -R mesos:mesos \
+    #     ${MESOS_LOG_DIR} \
     && rm -rf /tmp/mesos 
+
+COPY entrypoint.sh  /usr/local/bin/
     
-ENV PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
+# ENV PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages
