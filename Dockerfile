@@ -1,7 +1,7 @@
 FROM alpine:3.4
 MAINTAINER smizy
 
-#ENV MESOS_VERSION   1.0.0-rc1
+ENV MESOS_VERSION   1.0.0
 ENV MAVEN_VERSION   3.3.9
 
 ENV JAVA_HOME   /usr/lib/jvm/default-jvm
@@ -60,10 +60,19 @@ RUN set -x \
         python-dev \
         subversion-dev \
         zlib-dev \
-    && cd /tmp/ \
-    && git clone https://github.com/apache/mesos.git  \  
-    && cd /tmp/mesos \
-    && ./bootstrap \
+    # && cd /tmp/ \
+    # && git clone https://github.com/apache/mesos.git  \  
+    # && cd /tmp/mesos \
+    # && ./bootstrap \
+    && mirror_url=$( \
+        wget -q -O - http://www.apache.org/dyn/closer.cgi/mesos/${MESOS_VERSION}/mesos-${MESOS_VERSION}.tar.gz \
+        | sed -n 's#.*href="\(http://ftp.[^"]*\)".*#\1#p' \
+        | head -n 1 \
+    ) \ 
+    && wget -q -O - ${mirror_url} \
+        | tar -xzf - -C /tmp  \
+    && mv /tmp/mesos-${MESOS_VERSION} /tmp/mesos \
+    && cd /tmp/mesos \    
     && mkdir build \
     && cd build \
     && ../configure \
