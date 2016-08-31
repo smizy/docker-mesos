@@ -1,3 +1,3 @@
 # docker-mesos
 
-Apache Mesos(master branch snapshot) docker image based on alpine:3.4 
+Apache Mesos docker image based on alpine
