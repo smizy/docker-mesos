@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.4
 MAINTAINER smizy
 
 ENV _MESOS_VERSION  1.1.0
