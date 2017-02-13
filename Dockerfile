@@ -1,7 +1,7 @@
 FROM alpine:3.4
 MAINTAINER smizy
 
-ENV MESOS_VERSION   1.1.0
+ENV _MESOS_VERSION  1.1.0
 ENV MAVEN_VERSION   3.3.9
 
 ENV JAVA_HOME   /usr/lib/jvm/default-jvm
@@ -64,9 +64,9 @@ RUN set -x \
     # && git clone https://github.com/apache/mesos.git  \  
     # && cd /tmp/mesos \
     # && ./bootstrap \
-    && wget -q -O - ${mirror_url}mesos/${MESOS_VERSION}/mesos-${MESOS_VERSION}.tar.gz \
+    && wget -q -O - ${mirror_url}mesos/${_MESOS_VERSION}/mesos-${_MESOS_VERSION}.tar.gz \
         | tar -xzf - -C /tmp  \
-    && mv /tmp/mesos-${MESOS_VERSION} /tmp/mesos \
+    && mv /tmp/mesos-${_MESOS_VERSION} /tmp/mesos \
     && cd /tmp/mesos \    
     && mkdir build \
     && cd build \
@@ -94,5 +94,5 @@ RUN set -x \
     && rm -rf /tmp/mesos 
 
 COPY entrypoint.sh  /usr/local/bin/
-    
+
 ENTRYPOINT ["entrypoint.sh"]
