@@ -1,7 +1,7 @@
 FROM alpine:3.4
 MAINTAINER smizy
 
-ENV MESOS_VERSION   1.0.1
+ENV MESOS_VERSION   1.1.0
 ENV MAVEN_VERSION   3.3.9
 
 ENV JAVA_HOME   /usr/lib/jvm/default-jvm
@@ -15,11 +15,11 @@ RUN set -x \
         wget \
     ### maven
     && mirror_url=$( \
-        wget -q -O - http://www.apache.org/dyn/closer.cgi/maven/ \
-        | sed -n 's#.*href="\(http://ftp.[^"]*\)".*#\1#p' \
-        | head -n 1 \
+	wget -q -O - "http://www.apache.org/dyn/closer.cgi/?as_json=1" \
+	| grep "preferred" \
+	| sed -n 's#.*"\(http://*[^"]*\)".*#\1#p' \
     ) \ 
-    && wget -q -O - ${mirror_url}/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+    && wget -q -O - ${mirror_url}maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
         | tar -xzf - -C /tmp \
     && mv /tmp/apache-maven-${MAVEN_VERSION} /usr/lib/maven \
     && ln -s /usr/lib/maven/bin/mvn /usr/bin/mvn \
@@ -64,12 +64,7 @@ RUN set -x \
     # && git clone https://github.com/apache/mesos.git  \  
     # && cd /tmp/mesos \
     # && ./bootstrap \
-    && mirror_url=$( \
-        wget -q -O - http://www.apache.org/dyn/closer.cgi/mesos/${MESOS_VERSION}/mesos-${MESOS_VERSION}.tar.gz \
-        | sed -n 's#.*href="\(http://ftp.[^"]*\)".*#\1#p' \
-        | head -n 1 \
-    ) \ 
-    && wget -q -O - ${mirror_url} \
+    && wget -q -O - ${mirror_url}mesos/${MESOS_VERSION}/mesos-${MESOS_VERSION}.tar.gz \
         | tar -xzf - -C /tmp  \
     && mv /tmp/mesos-${MESOS_VERSION} /tmp/mesos \
     && cd /tmp/mesos \    
@@ -82,7 +77,7 @@ RUN set -x \
         --with-boost=/usr \ 
         --with-glog=/usr \
         --with-protobuf=/usr \
-        --without-included-zookeeper \
+    #    --without-included-zookeeper \
     && CPUCOUNT=$(cat /proc/cpuinfo | grep '^processor.*:' | wc -l)  \
     && make -j ${CPUCOUNT} \
     && make install \
