@@ -1,7 +1,7 @@
 FROM alpine:3.4
 MAINTAINER smizy
 
-ENV _MESOS_VERSION  1.1.0
+ENV _MESOS_VERSION  1.2.0
 ENV MAVEN_VERSION   3.3.9
 
 ENV JAVA_HOME   /usr/lib/jvm/default-jvm
@@ -23,19 +23,16 @@ RUN set -x \
         | tar -xzf - -C /tmp \
     && mv /tmp/apache-maven-${MAVEN_VERSION} /usr/lib/maven \
     && ln -s /usr/lib/maven/bin/mvn /usr/bin/mvn \
-    ## 
-    && apk --no-cache add \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
-        glog \
-    && apk --no-cache add --virtual .builddeps.edge \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
-        glog-dev \
+    ### mesos 
     && apk --no-cache add \
         apr-util \
         boost \
         curl \
         cyrus-sasl-crammd5 \
         fts \
+        libc6-compat \
+        libev \
+        libnl \
         libstdc++ \
         openjdk8-jre \
         patch \
@@ -51,8 +48,11 @@ RUN set -x \
         boost-dev \        
         build-base \
         curl-dev \
+        file \
         fts-dev \
         git \
+        libev-dev \
+        libnl-dev \
         libtool \
         linux-headers \
         openjdk8 \
@@ -60,24 +60,38 @@ RUN set -x \
         python-dev \
         subversion-dev \
         zlib-dev \
+    ## 
+    && apk --no-cache add \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+        glog \
+        leveldb \
+    && apk --no-cache add --virtual .builddeps.edge \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+        glog-dev \
+        leveldb-dev \    
     # && cd /tmp/ \
     # && git clone https://github.com/apache/mesos.git  \  
     # && cd /tmp/mesos \
     # && ./bootstrap \
+    && ln -s /usr/include/locale.h /usr/include/xlocale.h \
+    && ln -s /usr/bin/protoc /bin/protoc \
     && wget -q -O - ${mirror_url}mesos/${_MESOS_VERSION}/mesos-${_MESOS_VERSION}.tar.gz \
         | tar -xzf - -C /tmp  \
     && mv /tmp/mesos-${_MESOS_VERSION} /tmp/mesos \
     && cd /tmp/mesos \    
     && mkdir build \
-    && cd build \
+    && cd /tmp/mesos/build \
     && ../configure \
         --disable-java \
         --disable-optimize \
         --disable-python \
-        --with-boost=/usr \ 
-        --with-glog=/usr \
-        --with-protobuf=/usr \
-    #    --without-included-zookeeper \
+        --with-boost= \
+        --with-glog= \
+        --with-leveldb= \
+        --with-libev= \
+        --with-nl= \
+        --with-protobuf= \
+        LIBS="-lev -lglog -lleveldb -lnl -lprotobuf" \
     && CPUCOUNT=$(cat /proc/cpuinfo | grep '^processor.*:' | wc -l)  \
     && make -j ${CPUCOUNT} \
     && make install \
