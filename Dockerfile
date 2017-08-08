@@ -1,7 +1,7 @@
 FROM alpine:3.4
 MAINTAINER smizy
 
-ENV _MESOS_VERSION  1.2.0
+ENV _MESOS_VERSION  1.3.0
 ENV MAVEN_VERSION   3.3.9
 
 ENV JAVA_HOME   /usr/lib/jvm/default-jvm
